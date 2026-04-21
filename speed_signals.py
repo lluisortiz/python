@@ -110,6 +110,11 @@ def find_signals_along_route(
             continue
 
         ov = feature.get("object_value", "")
+
+        # Extract first image ID (used later to fetch the thumbnail)
+        images_data = feature.get("images", {}).get("data", [])
+        image_id = images_data[0].get("id") if images_data else None
+
         results.append({
             "id":                    feature.get("id", ""),
             "lat":                   lat,
@@ -122,7 +127,29 @@ def find_signals_along_route(
             "first_seen":            feature.get("first_seen_at", ""),
             "last_seen":             feature.get("last_seen_at", ""),
             "mapillary_url":         mapillary_url(feature.get("id", "")),
+            "image_id":              image_id,
+            "thumb_url":             None,   # populated by enrich_with_thumbnails()
         })
 
     results.sort(key=lambda x: x["position_km"])
     return results
+
+
+def enrich_with_thumbnails(
+    signals: List[Dict[str, Any]],
+    client,          # MapillaryClient — avoid circular import with string hint
+    size: int = 256,
+) -> List[Dict[str, Any]]:
+    """
+    Fetch Mapillary thumbnail URLs for each signal that has an image_id.
+    Mutates and returns the same list.
+    """
+    total = len(signals)
+    print(f"Descargando miniaturas ({total} señales)...")
+    for i, signal in enumerate(signals, 1):
+        print(f"  {i}/{total}", end="\r", flush=True)
+        image_id = signal.get("image_id")
+        if image_id:
+            signal["thumb_url"] = client.get_image_thumbnail_url(image_id, size=size)
+    print()
+    return signals

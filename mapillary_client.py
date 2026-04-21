@@ -10,8 +10,8 @@ from config import (
     REQUEST_TIMEOUT,
 )
 
-# Fields requested from the API
-_FEATURE_FIELDS = "id,object_value,geometry,first_seen_at,last_seen_at"
+# Fields requested from the API (images → first image ID for thumbnail)
+_FEATURE_FIELDS = "id,object_value,geometry,first_seen_at,last_seen_at,images"
 
 
 class MapillaryClient:
@@ -59,6 +59,17 @@ class MapillaryClient:
 
         url = f"{MAPILLARY_API_BASE}/map_features"
         return self._fetch_all_pages(url, params)
+
+    def get_image_thumbnail_url(self, image_id: str, size: int = 256) -> Optional[str]:
+        """
+        Return the signed thumbnail URL for a Mapillary image.
+        size: 256, 1024 or 2048.
+        """
+        body = self._get(
+            f"{MAPILLARY_API_BASE}/{image_id}",
+            {"access_token": self._token, "fields": f"thumb_{size}_url"},
+        )
+        return body.get(f"thumb_{size}_url") if body else None
 
     # ------------------------------------------------------------------
     # Internal helpers

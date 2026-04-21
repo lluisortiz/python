@@ -30,7 +30,7 @@ from report_generator import (
     save_json_report,
 )
 from route_parser import parse_file
-from speed_signals import filter_speed_signals, find_signals_along_route
+from speed_signals import filter_speed_signals, find_signals_along_route, enrich_with_thumbnails
 from utils import (
     calculate_route_total_km,
     get_bounding_box,
@@ -72,6 +72,10 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--token", "-t", metavar="TOKEN",
         help="Token de acceso a la API de Mapillary (sobreescribe MAPILLARY_ACCESS_TOKEN)",
+    )
+    p.add_argument(
+        "--no-images", action="store_true",
+        help="No descargar miniaturas de Mapillary (más rápido, HTML sin fotos)",
     )
     p.add_argument(
         "--verbose", "-v", action="store_true",
@@ -170,6 +174,12 @@ def main() -> None:
     print("Calculando proximidad a la ruta ...", end=" ", flush=True)
     signals = find_signals_along_route(route, speed_feats, radius_meters=args.radius)
     print(f"OK  →  {len(signals)} señales en la ruta")
+
+    # ------------------------------------------------------------------
+    # 5.5 Fetch Mapillary thumbnails (one API call per signal)
+    # ------------------------------------------------------------------
+    if signals and not args.no_images:
+        signals = enrich_with_thumbnails(signals, client)
 
     # ------------------------------------------------------------------
     # 6. Text report (always printed to stdout)

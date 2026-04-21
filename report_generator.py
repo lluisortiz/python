@@ -96,8 +96,22 @@ def save_html_report(
     for s in signals:
         speed_str = f"{s['speed_kmh']} km/h" if s["speed_kmh"] is not None else "—"
         gmaps = f"https://maps.google.com/?q={s['lat']},{s['lon']}"
+
+        thumb_url = s.get("thumb_url")
+        if thumb_url:
+            thumb_cell = (
+                f"<a href='{s['mapillary_url']}' target='_blank'>"
+                f"<img src='{thumb_url}' alt='señal' "
+                f"style='max-width:110px;max-height:80px;border-radius:4px;"
+                f"border:1px solid #ccc;vertical-align:middle'>"
+                f"</a>"
+            )
+        else:
+            thumb_cell = "<span style='color:#aaa;font-size:.8em'>Sin imagen</span>"
+
         rows += (
             f"<tr>"
+            f"<td>{thumb_cell}</td>"
             f"<td>{s['position_km']:.2f}</td>"
             f"<td>{_esc(s['sign_type'])}</td>"
             f"<td class='sp'>{speed_str}</td>"
@@ -110,7 +124,7 @@ def save_html_report(
             f"</tr>\n"
         )
 
-    no_data = "" if signals else "<tr><td colspan='6' class='empty'>Sin señales encontradas</td></tr>"
+    no_data = "" if signals else "<tr><td colspan='7' class='empty'>Sin señales encontradas</td></tr>"
 
     html = f"""<!DOCTYPE html>
 <html lang="es">
@@ -125,7 +139,7 @@ def save_html_report(
   table{{width:100%;border-collapse:collapse;background:#fff;border-radius:6px;overflow:hidden;
          box-shadow:0 1px 4px rgba(0,0,0,.12)}}
   th{{background:#1a252f;color:#fff;padding:11px 13px;text-align:left;font-size:.9em}}
-  td{{padding:9px 13px;border-bottom:1px solid #eef;font-size:.9em}}
+  td{{padding:8px 12px;border-bottom:1px solid #eef;font-size:.9em;vertical-align:middle}}
   tr:last-child td{{border-bottom:none}}
   tr:hover td{{background:#f0f8ff}}
   .sp{{font-weight:700;color:#c0392b;font-size:1.05em}}
@@ -146,7 +160,7 @@ def save_html_report(
 <table>
   <thead>
     <tr>
-      <th>PK (km)</th><th>Tipo de señal</th><th>Velocidad</th>
+      <th>Imagen</th><th>PK (km)</th><th>Tipo de señal</th><th>Velocidad</th>
       <th>Dist. ruta (m)</th><th>Coordenadas</th><th>Enlace</th>
     </tr>
   </thead>
