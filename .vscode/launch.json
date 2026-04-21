@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Extraer señales de velocidad",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "args": [
+                "${input:rutaArchivo}",
+                "--radius", "${input:radio}",
+                "--format", "all"
+            ],
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "rutaArchivo",
+            "type": "promptString",
+            "description": "Ruta al archivo GPX / KML / KMZ",
+            "default": "ruta.gpx"
+        },
+        {
+            "id": "radio",
+            "type": "promptString",
+            "description": "Radio de búsqueda en metros",
+            "default": "50"
+        }
+    ]
+}
